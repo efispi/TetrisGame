@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>טטריס</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        #board {
+            width: 200px;
+            height: 400px;
+            background-color: #eee;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .block {
+            width: 20px;
+            height: 20px;
+            background-color: blue;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+
+    <script>
+        const boardWidth = 10;
+        const boardHeight = 20;
+        let currentBlock;
+        let dropInterval;
+
+        const shapes = [
+            [[1, 1, 1, 1]],
+            [[1, 1], [1, 1]],
+            [[0, 1, 1], [1, 1, 0]],
+            [[1, 1, 0], [0, 1, 1]],
+            [[0, 1, 0], [1, 1, 1]],
+            [[1, 1, 1], [0, 0, 1]],
+            [[1, 1, 1], [1, 0, 0]]
+        ];
+
+        function createBlock() {
+            const shape = shapes[Math.floor(Math.random() * shapes.length)];
+
+            currentBlock = {
+                x: Math.floor(boardWidth / 2) - Math.floor(shape[0].length / 2),
+                y: 0,
+                shape: shape
+            };
+
+            drawBlock();
+        }
+
+        function drawBlock() {
+            $('.block').remove(); // מסיר את הצורה הקודמת
+            for (let y = 0; y < currentBlock.shape.length; y++) {
+                for (let x = 0; x < currentBlock.shape[y].length; x++) {
+                    if (currentBlock.shape[y][x]) {
+                        const block = $('<div class="block"></div>');
+                        block.css({
+                            left: (currentBlock.x + x) * 20,
+                            top: (currentBlock.y + y) * 20
+                        });
+                        $('#board').append(block);
+                    }
+                }
+            }
+        }
+
+        function drop() {
+            currentBlock.y++;
+            drawBlock();
+            if (isColliding()) {
+                currentBlock.y--;
+                drawBlock();
+                merge();
+                createBlock();
+            }
+        }
+
+        function isColliding() {
+            for (let y = 0; y < currentBlock.shape.length; y++) {
+                for (let x = 0; x < currentBlock.shape[y].length; x++) {
+                    if (currentBlock.shape[y][x]) {
+                        if (currentBlock.y + y >= boardHeight) {
+                            return true; // פגע בתחתית
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function merge() {
+            // פונקציה לשלב את הצורה למבנה המשחק הקיים
+            // כאן תוכל לנהל את השורות המלאות
+        }
+
+        $(document).on('keydown', function (e) {
+            const key = e.which;
+            if (key === 37) { // חץ שמאלה
+                currentBlock.x--;
+                drawBlock();
+                if (isColliding()) {
+                    currentBlock.x++;
+                    drawBlock();
+                }
+            } else if (key === 39) { // חץ ימינה
+                currentBlock.x++;
+                drawBlock();
+                if (isColliding()) {
+                    currentBlock.x--;
+                    drawBlock();
+                }
+            } else if (key === 40) { // חץ מטה
+                drop();
+            } else if (key === 32) { // רווח לסיבוב
+                // כאן תוכל להוסיף פונקציה לסיבוב
+            }
+        });
+
+        function startGame() {
+            createBlock();
+            dropInterval = setInterval(drop, 1000);
+        }
+
+        $(document).ready(function () {
+            startGame();
+        });
+    </script>
+</body>
+</html>

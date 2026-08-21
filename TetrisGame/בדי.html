@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>טטריס</title>
+    <style>
+        #tetrisBoard {
+            width: 200px;
+            height: 400px;
+            border: 1px solid #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .block {
+            width: 20px;
+            height: 20px;
+            background-color: blue;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="tetrisBoard"></div>
+
+    <script>
+    const board = document.getElementById('tetrisBoard');
+    let block = document.createElement('div');
+    block.className = 'block';
+    block.style.top = '0px'; // מתחילים מ-0
+    block.style.left = '90px'; // מיקום X
+
+    board.appendChild(block);
+
+    function moveBlockDown() {
+        let currentTop = parseInt(block.style.top);
+        if (currentTop + 20 < 400) { // אם הבלוק לא מגיע לתחתית
+            block.style.top = currentTop + 20 + 'px';
+        }
+    }
+     
+        setInterval(moveBlockDown, 1000); // כל שנייה
+    </script>
+
+</body>
+</html>
+

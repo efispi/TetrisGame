@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>טטריס</title>
+    <script src="jquery-3.7.1.min.map"></script>
+    <style>
+        canvas {
+            border: 1px solid black;
+            display: block;
+            margin: 0 auto;
+            background: #eee;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="tetris" width="300" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('tetris');
+        const context = canvas.getContext('2d');
+
+        const grid = 30; // גודל התאים
+        const rows = canvas.height / grid;
+        const cols = canvas.width / grid;
+
+        const colors = ['#FF5733', '#33FF57', '#3357FF', '#F1C40F', '#9B59B6', '#E67E22', '#1ABC9C'];
+        const shapes = [
+            [[1, 1, 1, 1]], // I
+            [[1, 1], [1, 1]], // O
+            [[0, 1, 0], [1, 1, 1]], // T
+            [[0, 1, 1], [1, 1, 0]], // S
+            [[1, 1, 0], [0, 1, 1]], // Z
+            [[1, 0, 0], [1, 1, 1]], // L
+            [[0, 0, 1], [1, 1, 1]], // J
+        ];
+
+        let board = Array.from({ length: rows }, () => Array(cols).fill(0));
+        let currentShape = getRandomShape();
+        let currentPos = { x: 3, y: 0 };
+        let score = 0;
+        let highScore = 0;
+        let gameOver = false;
+
+        function getRandomShape() //יוצר צורה רנדומלית
+        {
+            const index = Math.floor(Math.random() * shapes.length);
+            return { shape: shapes[index], color: colors[index] };
+        }
+
+        function drawBoard()//מצייר את הלוח
+        {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (board[r][c] !== 0) {
+                        context.fillStyle = colors[board[r][c] - 1];
+                        context.fillRect(c * grid, r * grid, grid, grid);
+                    }
+                }
+            }
+        }
+
+        function drawShape()// מצייר את הצורות 
+        {
+            context.fillStyle = currentShape.color;
+            for (let r = 0; r < currentShape.shape.length; r++) {
+                for (let c = 0; c < currentShape.shape[r].length; c++) {
+                    if (currentShape.shape[r][c] !== 0) {
+                        context.fillRect((currentPos.x + c) * grid, (currentPos.y + r) * grid, grid, grid);
+                    }
+                }
+            }
+        }
+
+        function mergeShape()//ממזגת את הצורה בלוח
+        {
+            for (let r = 0; r < currentShape.shape.length; r++) {
+                for (let c = 0; c < currentShape.shape[r].length; c++) {
+                    if (currentShape.shape[r][c] !== 0) {
+                        board[currentPos.y + r][currentPos.x + c] = colors.indexOf(currentShape.color) + 1;
+                    }
+                }
+            }
+            checkRows();
+        }
+
+        function checkRows()//בודקת אם יש שורות מלאות בלוח ומנקה אותן
+        {
+            for (let r = rows - 1; r >= 0; r--) {
+                if (board[r].every(cell => cell !== 0)) {
+                    board.splice(r, 1);//מנקה שורה
+                    board.unshift(Array(cols).fill(0));//מוסיף שורה ריקה בראש הלוח
+                    score += 10;//מוסיף עשר נקודות על כל שורה שנוקתה
+                    if (score > highScore) highScore = score;//מעדכן את השיא 
+                }
+            }
+        }
+
+        function canMove(offsetX, offsetY)//בודקת אם ניתן להזיז את הצורה הנוכחית בלוח על סמך המיקום החדש
+        {
+            for (let r = 0; r < currentShape.shape.length; r++) {
+                for (let c = 0; c < currentShape.shape[r].length; c++) {
+                    if (currentShape.shape[r][c] !== 0) {
+                        const newX = currentPos.x + c + offsetX;
+                        const newY = currentPos.y + r + offsetY;
+                        if (newX < 0 || newX >= cols || newY >= rows || board[newY] && board[newY][newX]) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        function rotateShape()//מסובבת את הצורה ב 90 מעלות
+        {
+            const newShape = currentShape.shape[0].map((_, index) => currentShape.shape.map(row => row[index]).reverse());
+            const originalShape = currentShape.shape;
+            currentShape.shape = newShape;
+
+            if (!canMove(0, 0)) {
+                currentShape.shape = originalShape; // אם לא אפשרי - החזר את הצורה המקורית
+            }
+        }
+
+        
+
+        function update()// הפונקציה מעדכנת את מצב המשחק
+        {
+            if (!canMove(0, 1)) {
+                mergeShape();//ממזגת את הצורה בלוח
+                currentShape = getRandomShape();//וצורה חדשה יוצאת
+                currentPos = { x: 3, y: 0 };
+
+                if (!canMove(0, 0)) {
+                    gameOver = true;//אם אין לצורה מקום -המשחק נגמר
+                }
+            } else {
+                currentPos.y++;//במקרה אחר הצורה תמשיך לרדת מטה
+                
+            }
+        }
+
+
+        let intervalID = setInterval(gameLoop, 900)// עדכון כל  שנייה      
+
+        clearInterval(setInterval)
+
+
+        function gameLoop()//הלולאה המרכזית של המשחק
+        {
+            if (!gameOver)//בודק אם המשחק עדיין פעיל 
+            {
+                 
+                update();//מעדכן
+                drawBoard();//מצייר את הלוח הנוכחי
+                drawShape();//מצייר את הצורה הנוכחית
+                //requestAnimationFrame(gameLoop);//הציור והאנימציה מתבצעים מחדש
+                
+            } else {
+                alert(`משחק נגמר! ניקוד: ${score}. שיא: ${highScore}`);
+            }
+        }
+        // פונקציה המגיבה ללחיצות המקשים
+        document.addEventListener('keydown', (event) => {
+            if (!gameOver) {
+                if (event.key === 'ArrowLeft' && canMove(-1, 0)) {
+                    currentPos.x--;
+                }
+                if (event.key === 'ArrowRight' && canMove(1, 0)) {
+                    currentPos.x++;
+                }
+                if (event.key === 'ArrowDown' && canMove(0, 1)) {
+                    currentPos.y++;
+                }
+                if (event.key === 'ArrowUp') {
+                    rotateShape();
+                }
+            }
+        });
+
+        // התחל את המשחק
+        gameLoop();
+
+    </script>
+</body>
+</html>

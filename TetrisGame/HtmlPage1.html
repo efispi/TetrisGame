@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>טטריס</title>
+    <style>
+        #tetrisBoard {
+            width: 200px;
+            height: 400px;
+            border: 1px solid #000;
+            position: relative;
+            overflow: hidden;
+        }
+        .block {
+            width: 20px;
+            height: 20px;
+            background-color: blue;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+
+<div id="tetrisBoard"></div>
+<button onclick="increaseSpeed()">האצת מהירות</button>
+<button onclick="decreaseSpeed()">האטת מהירות</button>
+
+<script>
+    const board = document.getElementById('tetrisBoard');
+    let block = document.createElement('div');
+    block.className = 'block';
+    block.style.top = '0px'; // מתחילים מ-0
+    block.style.left = '90px'; // מיקום X
+
+    board.appendChild(block);
+
+    let interval;
+    let speed = 1000; // מהירות התחלתית
+
+    function moveBlockDown() {
+        let currentTop = parseInt(block.style.top);
+        if (currentTop + 20 < 400) { // אם הבלוק לא מגיע לתחתית
+            block.style.top = currentTop + 20 + 'px';
+        } else {
+            clearInterval(interval); // עצור את ההתקדמות אם הגיע לתחתית
+            alert('המשחק הסתיים!'); // אפשר להוסיף לוגיקה כדי להתחיל מחדש
+        }
+    }
+
+    function startGame() {
+        interval = setInterval(moveBlockDown, speed); // התחלת הירידה
+    }
+
+    function increaseSpeed() {
+        if (speed > 200) { // לא לאפשר מהירות גבוהה מדי
+            speed -= 100; // להאיץ
+            clearInterval(interval);
+            startGame(); // להתחיל מחדש עם מהירות חדשה
+        }
+    }
+
+    function decreaseSpeed() {
+        speed += 100; // להאט
+        clearInterval(interval);
+        startGame(); // להתחיל מחדש עם מהירות חדשה
+    }
+
+    startGame(); // התחלת המשחק
+</script>
+
+</body>
+</html>
